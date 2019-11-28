@@ -49,8 +49,8 @@ var listCmd = &cobra.Command{
 					os.Exit(1)
 				}
 				for _, job := range jobs {
-					fmt.Fprintf(os.Stdout, "    %d %s %s %f %s\n",
-						job.ID, job.Name, job.Stage, job.Duration, job.Status,
+					fmt.Fprintf(os.Stdout, "\t%-12d %-10s %-20s %-9s %6.2f seconds\n",
+						job.ID, job.Stage, job.Name, job.Status, job.Duration,
 					)
 				}
 			}
