@@ -27,8 +27,12 @@ var listCmd = &cobra.Command{
 		git := gitlab.NewClient(nil, viper.GetString("token"))
 
 		pid := args[0]
-		status := gitlab.BuildState(gitlab.BuildStateValue(Status))
-		opts := &gitlab.ListProjectPipelinesOptions{Status: status}
+
+		opts := &gitlab.ListProjectPipelinesOptions{OrderBy: gitlab.String("id")}
+		if Status != "" {
+			status := gitlab.BuildState(gitlab.BuildStateValue(Status))
+			opts.Status = status
+		}
 		pipelines, _, err := git.Pipelines.ListProjectPipelines(pid, opts)
 
 		if err != nil {
