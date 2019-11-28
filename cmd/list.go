@@ -3,47 +3,85 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/xanzy/go-gitlab"
 )
 
+var Group bool
 var Status string
 var IncludeJobs bool
+var Number int
 
 func init() {
 	rootCmd.AddCommand(listCmd)
 	listCmd.Flags().StringVarP(&Status, "status", "s", "", "pipeline status to filter")
 	listCmd.Flags().BoolVarP(&IncludeJobs, "jobs", "j", false, "include jobs to output")
+	listCmd.Flags().BoolVarP(&Group, "group", "g", false, "get all pipelines in group")
+	listCmd.Flags().IntVarP(&Number, "number", "n", 1, "number of pipelines to list")
+}
+
+type Pipeline struct {
+	*gitlab.PipelineInfo
+	Project string
+}
+
+func (p Pipeline) String() string {
+	return fmt.Sprintf("%-50s %-12d %-30s %-9s\n", p.Project, p.ID, p.Ref, p.Status)
 }
 
 var listCmd = &cobra.Command{
-	Use:   "list [project]",
-	Short: "List pipelines in project",
-	Long:  "List pipelines in project",
-	Args:  cobra.ExactArgs(1),
+	Use:   "list [project|group]",
+	Short: "List pipelines",
+	Long: `List pipelines in a project or all projects in a group.
+If you want to list for a group, you have to use -g flag.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		git := gitlab.NewClient(nil, viper.GetString("token"))
 
-		pid := args[0]
+		var allPipelines []Pipeline
+		var projects []string
 
-		opts := &gitlab.ListProjectPipelinesOptions{OrderBy: gitlab.String("id")}
-		if Status != "" {
-			status := gitlab.BuildState(gitlab.BuildStateValue(Status))
-			opts.Status = status
+		if Group {
+			groupProjects, _, err := git.Groups.ListGroupProjects(args[0], nil)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "couldn't get group projects: %v\n", err)
+				os.Exit(1)
+			}
+			for _, project := range groupProjects {
+				projects = append(projects, project.PathWithNamespace)
+			}
+		} else {
+			projects = append(projects, args[0])
 		}
-		pipelines, _, err := git.Pipelines.ListProjectPipelines(pid, opts)
 
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "couldn't get project pipelines: %v\n", err)
-			os.Exit(1)
+		for _, pid := range projects {
+			opts := &gitlab.ListProjectPipelinesOptions{OrderBy: gitlab.String("id")}
+			opts.PerPage = Number
+			if Status != "" {
+				status := gitlab.BuildState(gitlab.BuildStateValue(Status))
+				opts.Status = status
+			}
+			pipelines, _, err := git.Pipelines.ListProjectPipelines(pid, opts)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "couldn't get project pipelines: %v\n", err)
+				os.Exit(1)
+			}
+			for _, pipeline := range pipelines {
+				allPipelines = append(allPipelines, Pipeline{pipeline, pid})
+			}
 		}
 
-		for _, pipeline := range pipelines {
-			fmt.Fprintf(os.Stdout, "%d %s %s\n", pipeline.ID, pipeline.Status, pipeline.Ref)
+		sort.Slice(allPipelines, func(i, j int) bool {
+			return allPipelines[i].ID > allPipelines[j].ID
+		})
+
+		for _, pipeline := range allPipelines {
+			fmt.Fprintf(os.Stdout, "%s", pipeline)
 			if IncludeJobs {
-				jobs, _, err := git.Jobs.ListPipelineJobs(pid, pipeline.ID, nil)
+				jobs, _, err := git.Jobs.ListPipelineJobs(pipeline.Project, pipeline.ID, nil)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "couldn't get pipeline jobs: %v\n", err)
 					os.Exit(1)
