@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -36,7 +37,9 @@ func (p Pipeline) String() string {
 		status = RED(status)
 	}
 
-	return fmt.Sprintf("%-40s %-10d %-30s %-9s", p.Project, p.ID, p.Ref, status)
+	createdAt := p.CreatedAt.Format(time.RFC822Z)
+
+	return fmt.Sprintf("%-40s %-30s %-10d %22s %-9s", p.Project, p.Ref, p.ID, createdAt, status)
 }
 
 type Job struct {
