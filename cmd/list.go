@@ -29,7 +29,29 @@ type Pipeline struct {
 }
 
 func (p Pipeline) String() string {
-	return fmt.Sprintf("%-50s %-12d %-30s %-9s\n", p.Project, p.ID, p.Ref, p.Status)
+	status := p.Status
+	if status == "success" {
+		status = GREEN(status)
+	} else if status == "failed" {
+		status = RED(status)
+	}
+
+	return fmt.Sprintf("%-40s %-10d %-30s %-9s", p.Project, p.ID, p.Ref, status)
+}
+
+type Job struct {
+	*gitlab.Job
+}
+
+func (j Job) String() string {
+	status := j.Status
+	if status == "success" {
+		status = GREEN(status)
+	} else if status == "failed" {
+		status = RED(status)
+	}
+
+	return fmt.Sprintf("%-12d %-10s %-20s %-9s %6.2f seconds", j.ID, j.Stage, j.Name, status, j.Duration)
 }
 
 var listCmd = &cobra.Command{
@@ -79,7 +101,7 @@ If you want to list for a group, you have to use -g flag.`,
 		})
 
 		for _, pipeline := range allPipelines {
-			fmt.Fprintf(os.Stdout, "%s", pipeline)
+			fmt.Fprintf(os.Stdout, "%s\n", pipeline)
 			if IncludeJobs {
 				jobs, _, err := git.Jobs.ListPipelineJobs(pipeline.Project, pipeline.ID, nil)
 				if err != nil {
@@ -87,9 +109,7 @@ If you want to list for a group, you have to use -g flag.`,
 					os.Exit(1)
 				}
 				for _, job := range jobs {
-					fmt.Fprintf(os.Stdout, "\t%-12d %-10s %-20s %-9s %6.2f seconds\n",
-						job.ID, job.Stage, job.Name, job.Status, job.Duration,
-					)
+					fmt.Fprintf(os.Stdout, "\t%s\n", Job{job})
 				}
 			}
 		}
