@@ -2,11 +2,6 @@
 
 `gitlabci` is a simple command line tool to work with Gitlab's CI/CD pipelines.
 
-Most of the time I want to see all pipelines of a group in a single dashboard,
-but Gitlab lacks this feature. There is a 4 years old
-[issue](https://gitlab.com/gitlab-org/gitlab/issues/7861) (and it's still
-alive). This is the reason of this tool's existence.
-
 ## Installation
 
 [Download](https://github.com/egegunes/gitlabci/releases) the binary for your operating system.
