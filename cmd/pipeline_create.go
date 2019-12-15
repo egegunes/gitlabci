@@ -10,7 +10,7 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(createCmd)
+	pipelineCmd.AddCommand(createCmd)
 }
 
 var createCmd = &cobra.Command{

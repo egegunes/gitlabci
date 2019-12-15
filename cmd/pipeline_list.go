@@ -17,7 +17,7 @@ var IncludeJobs bool
 var Number int
 
 func init() {
-	rootCmd.AddCommand(listCmd)
+	pipelineCmd.AddCommand(listCmd)
 	listCmd.Flags().StringVarP(&Status, "status", "s", "", "pipeline status to filter")
 	listCmd.Flags().BoolVarP(&IncludeJobs, "jobs", "j", false, "include jobs to output")
 	listCmd.Flags().BoolVarP(&Group, "group", "g", false, "get all pipelines in group")
