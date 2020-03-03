@@ -14,6 +14,12 @@
 2. $HOME/.config/gitlabci/.gitlab.json
 3. $PWD/.gitlab.json
 
+```json
+{
+    "token": "SUPERSECRET"
+}
+```
+
 ## Usage
 
 ### Pipelines
