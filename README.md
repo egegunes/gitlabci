@@ -121,3 +121,9 @@ $ gitlabci env update group/project1 GO_VERSION 1.13
 ```
 $ gitlabci env delete group/project1 GO_VERSION
 ```
+
+### Validate
+
+```
+$ gitlabci lint .gitlab-ci.yml
+```

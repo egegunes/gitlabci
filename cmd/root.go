@@ -21,7 +21,7 @@ func initConfig() {
 	viper.AddConfigPath(".")
 
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Fprintf(os.Stderr, "couldn't read config file: %v", err)
+		fmt.Fprintf(os.Stderr, "couldn't read config file: %v\n", err)
 		os.Exit(1)
 	}
 }
