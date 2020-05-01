@@ -3,14 +3,18 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/xanzy/go-gitlab"
 )
 
+var env []string
+
 func init() {
 	pipelineCmd.AddCommand(createCmd)
+	createCmd.Flags().StringSliceVarP(&env, "variable", "e", []string{}, "Override environment variables. KEY=VALUE")
 }
 
 var createCmd = &cobra.Command{
@@ -24,7 +28,19 @@ var createCmd = &cobra.Command{
 		pid := args[0]
 		ref := args[1]
 
-		opts := &gitlab.CreatePipelineOptions{Ref: gitlab.String(ref)}
+		var variables []*gitlab.PipelineVariable
+
+		for _, variable := range env {
+			v := strings.Split(variable, "=")
+
+			variables = append(variables, &gitlab.PipelineVariable{
+				Key:          v[0],
+				Value:        v[1],
+				VariableType: "env_var",
+			})
+		}
+
+		opts := &gitlab.CreatePipelineOptions{Ref: gitlab.String(ref), Variables: variables}
 		pipeline, _, err := git.Pipelines.CreatePipeline(pid, opts)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "couldn't create pipeline: %v\n", err)

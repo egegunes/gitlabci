@@ -84,6 +84,12 @@ group/project2           master      99814019 01 Dec 19 21:32 +0000 running
 $ gitlabci pipeline create group/project master
 ```
 
+#### Create pipeline with overriding variables
+
+```
+$ gitlabci pipeline create group/project master -e BUILD_TARGET=staging
+```
+
 ### Environment Variables
 
 #### List variables
