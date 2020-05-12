@@ -35,9 +35,8 @@ var envUpdateCmd = &cobra.Command{
 			EnvironmentScope: &scope,
 		}
 
-		variable, _, err := git.ProjectVariables.UpdateVariable(pid, key, variableOptions, nil)
-		fmt.Fprintf(os.Stderr, "updating %s...", variable.Key)
-
+		_, _, err := git.ProjectVariables.UpdateVariable(pid, key, variableOptions, nil)
+		fmt.Fprintf(os.Stderr, "updating %s...", key)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "%s\n", RED("error"))
 			fmt.Fprintf(os.Stderr, "couldn't update variable: %v\n", err)

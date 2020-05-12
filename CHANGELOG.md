@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## [0.3.1] - 2020-05-12
+### Fixed
+- Panic with runtime error on trying to update non existent variable or project
+
 ## [0.3.0] - 2020-05-01
 ### Added
 - New command (`lint`) for validating .gitlab-ci.yml files
